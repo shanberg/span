@@ -1,9 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 
-const SettingsContext = React.createContext({});
-const SettingsProvider = SettingsContext.Provider;
-
 const fontStyles = [
   {
     label: "Text/sm",
@@ -94,13 +91,19 @@ const fontStyles = [
   }
 ];
 
+const SettingsContext = React.createContext<Settings>({
+  performanceMode: false,
+  fontStyle: fontStyles[1]
+});
+
+const SettingsProvider = SettingsContext.Provider;
+
 import {
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
   ModalContent,
-  useDimensions,
   Text,
   Table,
   Thead,
@@ -124,7 +127,6 @@ import {
   ModalCloseButton,
   extendTheme,
   Flex,
-  Switch,
   Select,
   SimpleGrid
 } from "@chakra-ui/react";
@@ -232,7 +234,12 @@ const typography = { fonts, fontSizes, fontWeights, lineHeights };
 
 const theme = extendTheme({ typography });
 
-const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }) => {
+const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
+  isOpen: boolean,
+  onClose: () => void;
+  strings: string[],
+  onUpdateRows: (arr: string[]) => void
+}) => {
   const initialValue = strings?.join("\n") || "";
   const [newValue, setNewValue] = React.useState<string>(initialValue);
 
@@ -282,7 +289,7 @@ const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }) => {
   );
 };
 
-function useResizedDimensions(ref, settings) {
+function useResizedDimensions(ref: React.RefObject<any>, settings: Settings): number | null {
   // Synchronized state for settings to track if user has updated settings
   const [syncSettings, setSyncSettings] = React.useState(settings);
 
@@ -313,9 +320,14 @@ function useResizedDimensions(ref, settings) {
   return width;
 }
 
-const Row = ({ str, logRow }) => {
+type RowProps = {
+  str: string;
+  logRow: (rowData: Row) => void;
+};
+
+const Row = ({ str, logRow }: RowProps) => {
   const settings = React.useContext(SettingsContext);
-  const elementRef = React.useRef();
+  const elementRef = React.useRef<any>(null);
   // const dimensions = useDimensions(elementRef);
 
   const width = useResizedDimensions(elementRef, settings);
@@ -404,7 +416,7 @@ const analyzeRows = (rows: Row[]): Analysis => {
   };
 };
 
-const DataBar = ({ widthPx, label }) => {
+const DataBar = ({ widthPx, label }: { widthPx: number, label: React.ReactElement }) => {
   return (
     <VStack
       position="relative"
@@ -426,7 +438,13 @@ const DataBar = ({ widthPx, label }) => {
   );
 };
 
-const StDevBar = ({ analysis, sdev, pctCoverage }) => {
+type StDevBarProps = {
+  analysis: Analysis,
+  sdev: number,
+  pctCoverage: number
+}
+
+const StDevBar = ({ analysis, sdev, pctCoverage }: StDevBarProps) => {
   const numChars = Math.floor(sdev / analysis.averageWidthPerCharPx);
 
   return (
@@ -460,7 +478,7 @@ type Settings = {
 function App() {
   // State
   const [strings, setStrings] = React.useState<string[]>(STRINGS);
-  const [rowData, setRowData] = React.useState({});
+  const [rowData, setRowData] = React.useState<any>({});
   const { isOpen, onClose, onOpen } = useDisclosure();
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
@@ -469,8 +487,8 @@ function App() {
 
   // Fn to push row data up to state after a row has been rendered
   const logRow = React.useCallback(
-    (id, rowData) => {
-      setRowData((prev) => ({ ...prev, [id]: rowData }));
+    (id: string, rowData: Row) => {
+      setRowData((prev: Row) => ({ ...prev, [id]: rowData }));
     },
     [strings, settings]
   );
@@ -481,7 +499,7 @@ function App() {
     setSettings((settings) => ({
       ...settings,
       fontStyle: fontStyle
-    }));
+    }) as Settings);
 
     setRowData([]);
   }, []);
@@ -685,7 +703,7 @@ function App() {
 export default App;
 
 const rootElement = document.getElementById("root");
-const root = createRoot(rootElement);
+const root = createRoot(rootElement!);
 
 root.render(
   <React.StrictMode>
