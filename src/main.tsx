@@ -100,7 +100,6 @@ import {
   ModalBody,
   ModalFooter,
   ModalContent,
-  useDimensions,
   Text,
   Table,
   Thead,
@@ -124,7 +123,6 @@ import {
   ModalCloseButton,
   extendTheme,
   Flex,
-  Switch,
   Select,
   SimpleGrid
 } from "@chakra-ui/react";
@@ -232,7 +230,12 @@ const typography = { fonts, fontSizes, fontWeights, lineHeights };
 
 const theme = extendTheme({ typography });
 
-const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }) => {
+const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
+  isOpen: boolean,
+  onClose: () => void;
+  strings: string[],
+  onUpdateRows: (arr: string[]) => void
+}) => {
   const initialValue = strings?.join("\n") || "";
   const [newValue, setNewValue] = React.useState<string>(initialValue);
 
@@ -282,7 +285,7 @@ const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }) => {
   );
 };
 
-function useResizedDimensions(ref, settings) {
+function useResizedDimensions(ref: React.RefObject<any>, settings: Settings) {
   // Synchronized state for settings to track if user has updated settings
   const [syncSettings, setSyncSettings] = React.useState(settings);
 
@@ -313,7 +316,12 @@ function useResizedDimensions(ref, settings) {
   return width;
 }
 
-const Row = ({ str, logRow }) => {
+type RowProps = {
+  str: string;
+  logRow: (rowData: Row) => void;
+};
+
+const Row = ({ str, logRow }: RowProps) => {
   const settings = React.useContext(SettingsContext);
   const elementRef = React.useRef();
   // const dimensions = useDimensions(elementRef);
@@ -426,7 +434,13 @@ const DataBar = ({ widthPx, label }) => {
   );
 };
 
-const StDevBar = ({ analysis, sdev, pctCoverage }) => {
+type StDevBarProps = {
+  analysis: Analysis,
+  sdev: number,
+  pctCoverage: number
+}
+
+const StDevBar = ({ analysis, sdev, pctCoverage }: StDevBarProps) => {
   const numChars = Math.floor(sdev / analysis.averageWidthPerCharPx);
 
   return (
@@ -469,7 +483,7 @@ function App() {
 
   // Fn to push row data up to state after a row has been rendered
   const logRow = React.useCallback(
-    (id, rowData) => {
+    (id: string, rowData: Row) => {
       setRowData((prev) => ({ ...prev, [id]: rowData }));
     },
     [strings, settings]
