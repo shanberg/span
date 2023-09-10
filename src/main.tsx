@@ -1,5 +1,40 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
+import "./font.css";
+
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalContent,
+  Text,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Td,
+  ChakraProvider,
+  Center,
+  Tbody,
+  VStack,
+  Divider,
+  Box,
+  useDisclosure,
+  Button,
+  Textarea,
+  ModalOverlay,
+  HStack,
+  Heading,
+  ButtonGroup,
+  SkeletonText,
+  ModalCloseButton,
+  extendTheme,
+  Flex,
+  Select,
+  SimpleGrid,
+  FormControl,
+} from "@chakra-ui/react";
 
 const fontStyles = [
   {
@@ -59,7 +94,6 @@ const fontStyles = [
   {
     label: "Button/sm",
     props: {
-      color: "var(--interaction-main, #005CEA)",
       fontFamily: "Libre Franklin",
       fontSize: "12px",
       fontStyle: "normal",
@@ -70,7 +104,6 @@ const fontStyles = [
   {
     label: "Button/md",
     props: {
-      color: "var(--interaction-main, #005CEA)",
       fontFamily: "Libre Franklin",
       fontSize: "14px",
       fontStyle: "normal",
@@ -81,7 +114,6 @@ const fontStyles = [
   {
     label: "Button/lg",
     props: {
-      color: "var(--interaction-main, #005CEA)",
       fontFamily: "Libre Franklin",
       fontSize: "16px",
       fontStyle: "normal",
@@ -97,41 +129,6 @@ const SettingsContext = React.createContext<Settings>({
 });
 
 const SettingsProvider = SettingsContext.Provider;
-
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalContent,
-  Text,
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Td,
-  ChakraProvider,
-  Center,
-  Tbody,
-  VStack,
-  Divider,
-  Box,
-  useDisclosure,
-  Button,
-  Textarea,
-  ModalOverlay,
-  HStack,
-  Heading,
-  ButtonGroup,
-  Skeleton,
-  ModalCloseButton,
-  extendTheme,
-  Flex,
-  Select,
-  SimpleGrid,
-  FormControl,
-  FormLabel
-} from "@chakra-ui/react";
 
 const STRINGS = [
   "EgestasMetus.png",
@@ -1175,7 +1172,11 @@ const lineHeights = {
 
 const typography = { fonts, fontSizes, fontWeights, lineHeights };
 
-const theme = extendTheme({ typography });
+const theme = extendTheme({ typography, 
+  config: {
+    initialColorMode: 'dark',
+  }
+});
 
 const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
   isOpen: boolean,
@@ -1308,6 +1309,8 @@ const Row = ({ str, logRow }: RowProps) => {
 type Analysis = {
   averageStrLength: number;
   averageWidthPx: number;
+  medianStrLength?: number;
+  medianWidthPx?: number;
   averageWidthPerCharPx: number;
   stdDevWidthPx: number;
   stdDevWidthPerCharPx: number;
@@ -1330,6 +1333,7 @@ const analyzeRows = (rows: Row[]): Analysis => {
     (acc, row) => acc + row.widthPerChar,
     0
   );
+
   const averageWidthPerCharPx = totalWidthPerCharPx / totalRows;
 
   const varianceWidthPx =
@@ -1369,6 +1373,7 @@ const DataBar = ({ widthPx, label }: { widthPx: number, label: React.ReactElemen
     >
       <Box
         width={widthPx + "px"}
+        transition="width 0.2s ease-in-out"
         color="blue.500"
         borderTop="4px solid"
         borderRadius="100px"
@@ -1463,149 +1468,175 @@ function App() {
   const analysis = analyzeRows(resultsArr);
 
   return (
-    <ChakraProvider>
-      <SettingsProvider value={settings}>
-        <EditRowsDialog
-          onUpdateRows={handleUpdateRows}
-          strings={strings}
-          isOpen={isOpen}
-          onClose={onClose}
-        />
-        <VStack as={Center} minHeight="100vh" p={4} align="stretch">
-          {/* Controls */}
-          <VStack
-            align="flex-start"
-            spacing={4}
-            sx={{
-              backdropFilter: "blur(20px)"
+    <SettingsProvider value={settings}>
+      <EditRowsDialog
+        onUpdateRows={handleUpdateRows}
+        strings={strings}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+      <VStack as={Center} minHeight="100vh" p={4} align="stretch">
+        {/* Controls */}
+        <VStack
+          align="flex-start"
+          spacing={4}
+          sx={{
+            backdropFilter: "blur(32px)"
+          }}
+          boxShadow="
+            inset 0 0 20px 20px var(--chakra-colors-chakra-body-bg),
+            inset 0 0 0 2px #ffffff50,
+            0 0 1px #00000050,
+            0 8px 12px #00000011
+          "
+          p={6}
+          borderRadius="8px"
+          position="sticky"
+          overflow="hidden"
+          top={4}
+        >
+          <HStack
+            position="relative"
+            px={6}
+            py={1}
+            margin={-6}
+            mb={2}
+            alignSelf="stretch"
+            width="auto"
+            bottom="auto"
+            _after={{
+              content: "''",
+              position: "absolute",
+              height: "1px",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              opacity: 0.05,
+              bg: "black"
             }}
-            boxShadow="
-              inset 0 0 20px 20px #fafaff,
-              inset 0 0 0 2px #ffffff50,
-              0 8px 12px #00000011
-            "
-            p={6}
-            borderRadius="8px"
-            position="sticky"
-            overflow="hidden"
-            top={4}
           >
-            <HStack
-              position="relative"
-              px={6}
-              py={1}
-              margin={-6}
-              mb={2}
-              alignSelf="stretch"
-              width="auto"
-              bottom="auto"
-              _after={{
-                content: "''",
-                position: "absolute",
-                height: "1px",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                opacity: 0.05,
-                bg: "black"
-              }}
-            >
-              <Heading opacity={0.7} fontSize="14px">
-                Measure Text Width
-              </Heading>
-              <Text opacity={0.7} fontSize="14px">
-                Find the best width for a set of text
-              </Text>
-            </HStack>
-            <Box
-              position="absolute"
-              borderRadius="inherit"
-              inset={0}
-              zIndex={-1}
-              as="svg"
-              viewBox="0 0 200 200"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <filter id="noiseFilter">
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="30.0"
-                  numOctaves="3"
-                  stitchTiles="stitch"
-                />
-              </filter>
-              <rect
-                width="100%"
-                opacity="0.5"
-                height="100%"
-                filter="url(#noiseFilter)"
+            <Heading opacity={0.7} fontSize="14px">
+              Measure Text Width
+            </Heading>
+            <Text opacity={0.7} fontSize="14px">
+              Find the best width for a set of text
+            </Text>
+          </HStack>
+          <Box
+            position="absolute"
+            borderRadius="inherit"
+            inset={0}
+            zIndex={-1}
+            as="svg"
+            width="100%"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <filter id="noiseFilter">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="30.0"
+                numOctaves="3"
+                stitchTiles="stitch"
               />
-            </Box>
+            </filter>
+            <rect
+              width="100%"
+              opacity="0.25"
+              height="100%"
+              filter="url(#noiseFilter)"
+            />
+          </Box>
 
-            <HStack
-              justifyContent="space-between"
-              alignSelf="stretch"
-              alignItems="flex-start"
+          <HStack
+            justifyContent="space-between"
+            alignSelf="stretch"
+            alignItems="flex-start"
+          >
+            <SkeletonText
+              isLoaded={!!analysis.averageStrLength}
+              minWidth="50%"
+              spacing={8}
+              noOfLines={4}
+              skeletonHeight={4}>
+              <VStack align="flex-start" spacing={4} flex={1}>
+                <DataBar
+                  widthPx={analysis.averageWidthPx}
+                  label={
+                    <>
+                      <strong>Average</strong>
+                      <span>{analysis.averageStrLength} chars</span>
+                      <span>{analysis.averageWidthPx.toFixed()}px</span>
+                    </>
+                  }
+                />
+                <StDevBar
+                  analysis={analysis}
+                  pctCoverage={68}
+                  sdev={analysis.stdDevs1Px}
+                />
+                <StDevBar
+                  analysis={analysis}
+                  pctCoverage={95}
+                  sdev={analysis.stdDevs2Px}
+                />
+                <StDevBar
+                  analysis={analysis}
+                  pctCoverage={99.7}
+                  sdev={analysis.stdDevs3Px}
+                />
+              </VStack>
+            </SkeletonText>
+
+            <Flex
+              gap={2}
+              minWidth="8em"
+              alignItems="stretch"
+              flexDirection="column"
+              whiteSpace="nowrap"
             >
-              <Skeleton isLoaded={!!analysis.averageStrLength} width="100%">
-                <VStack align="flex-start" spacing={4}>
-                  <DataBar
-                    widthPx={analysis.averageWidthPx}
-                    label={
-                      <>
-                        <strong>Average</strong>
-                        <span>{analysis.averageStrLength} chars</span>
-                        <span>{analysis.averageWidthPx.toFixed()}px</span>
-                      </>
-                    }
-                  />
-                  <StDevBar
-                    analysis={analysis}
-                    pctCoverage={68}
-                    sdev={analysis.stdDevs1Px}
-                  />
-                  <StDevBar
-                    analysis={analysis}
-                    pctCoverage={95}
-                    sdev={analysis.stdDevs2Px}
-                  />
-                  <StDevBar
-                    analysis={analysis}
-                    pctCoverage={99.7}
-                    sdev={analysis.stdDevs3Px}
-                  />
-                </VStack>
-              </Skeleton>
+              <Button flexShrink={0} colorScheme="blue" onClick={onOpen}>
+                Edit Rows
+              </Button>
+              <FormControl>
+                <Select
+                  variant='filled'
+                  flexShrink={0}
+                  defaultValue={settings.fontStyle.label}
+                  onChange={(e) => handleUpdateStyle(e.target.value)}
+                >
+                  {fontStyles.map((fs) => (
+                    <option key={fs.label} value={fs.label}>{fs.label}</option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Flex>
+          </HStack>
+        </VStack>
 
-              <Flex
-                gap={2}
-                minWidth="8em"
-                alignItems="stretch"
-                flexDirection="column"
-                whiteSpace="nowrap"
-              >
-                <Button flexShrink={0} colorScheme="blue" onClick={onOpen}>
-                  Edit Rows
-                </Button>
-                <FormControl>
-                  <FormLabel>Style</FormLabel>
-                  <Select
-                    bg="#fff"
-                    flexShrink={0}
-                    defaultValue={settings.fontStyle.label}
-                    onChange={(e) => handleUpdateStyle(e.target.value)}
-                  >
-                    {fontStyles.map((fs) => (
-                      <option value={fs.label}>{fs.label}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Flex>
-            </HStack>
+        {settings.performanceMode ? (
+          <VStack align="flex-start" p={6} spacing={7}>
+            {strings.map((str, index) => {
+              const key = str + index;
+              return (
+                <Row
+                  str={str}
+                  key={key}
+                  logRow={(rowData) => logRow(key, rowData)}
+                />
+              );
+            })}
           </VStack>
-
-          {settings.performanceMode ? (
-            <VStack align="flex-start" p={6} spacing={7}>
+        ) : (
+          <Table margin="auto" width="100%" variant="simple">
+            <Thead>
+              <Tr>
+                <Th>String</Th>
+                <Th textAlign="end">Width</Th>
+                <Th textAlign="end">Per char</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {strings.map((str, index) => {
                 const key = str + index;
                 return (
@@ -1616,33 +1647,11 @@ function App() {
                   />
                 );
               })}
-            </VStack>
-          ) : (
-            <Table margin="auto" width="100%" variant="simple">
-              <Thead>
-                <Tr>
-                  <Th>String</Th>
-                  <Th textAlign="end">Width</Th>
-                  <Th textAlign="end">Per char</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {strings.map((str, index) => {
-                  const key = str + index;
-                  return (
-                    <Row
-                      str={str}
-                      key={key}
-                      logRow={(rowData) => logRow(key, rowData)}
-                    />
-                  );
-                })}
-              </Tbody>
-            </Table>
-          )}
-        </VStack>
-      </SettingsProvider>
-    </ChakraProvider>
+            </Tbody>
+          </Table>
+        )}
+      </VStack>
+    </SettingsProvider>
   );
 }
 
