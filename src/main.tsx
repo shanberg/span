@@ -1174,7 +1174,8 @@ const typography = { fonts, fontSizes, fontWeights, lineHeights };
 
 const theme = extendTheme({ typography, 
   config: {
-    initialColorMode: 'dark',
+    initialColorMode: 'light',
+    useSystemColorMode: false
   }
 });
 
@@ -1485,7 +1486,6 @@ function App() {
           }}
           boxShadow="
             inset 0 0 20px 20px var(--chakra-colors-chakra-body-bg),
-            inset 0 0 0 2px #ffffff50,
             0 0 1px #00000050,
             0 8px 12px #00000011
           "
@@ -1494,6 +1494,14 @@ function App() {
           position="sticky"
           overflow="hidden"
           top={4}
+          _after={{
+            pointerEvents: "none",
+            content: "''",
+            position: "absolute",
+            inset: 0,
+            borderRadius: "inherit",
+            boxShadow: "inset 0 0 0 0.5px #ffffff1a"
+          }}
         >
           <HStack
             position="relative"
@@ -1511,8 +1519,8 @@ function App() {
               bottom: 0,
               left: 0,
               right: 0,
-              opacity: 0.05,
-              bg: "black"
+              opacity: 0.5,
+              bg: "var(--chakra-colors-chakra-border-color)"
             }}
           >
             <Heading opacity={0.7} fontSize="14px">
@@ -1523,6 +1531,9 @@ function App() {
             </Text>
           </HStack>
           <Box
+          sx={{
+            backdropFilter: "blur(32px)"
+          }}
             position="absolute"
             borderRadius="inherit"
             inset={0}
