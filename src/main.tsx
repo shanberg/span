@@ -1172,7 +1172,8 @@ const lineHeights = {
 
 const typography = { fonts, fontSizes, fontWeights, lineHeights };
 
-const theme = extendTheme({ typography, 
+const theme = extendTheme({
+  typography,
   config: {
     initialColorMode: 'light',
     useSystemColorMode: false
@@ -1319,7 +1320,21 @@ type Analysis = {
   stdDevs2Px: number;
   stdDevs3Px: number;
   stdDevs4Px: number;
+  percentile70Px: number;
+  percentile80Px: number;
+  percentile90Px: number;
+  percentile95Px: number;
+  percentile99Px: number;
+  percentile100Px: number;
 };
+
+const getPercentile = (rows: Row[], percentile: number) => {
+  if (!rows.length) return 0;
+
+  const sortedRows = rows.sort((a, b) => a.width - b.width);
+  const index = Math.ceil((percentile / 100) * sortedRows.length) - 1;
+  return sortedRows[index].width;
+}
 
 const analyzeRows = (rows: Row[]): Analysis => {
   const totalRows = rows.length;
@@ -1351,6 +1366,13 @@ const analyzeRows = (rows: Row[]): Analysis => {
     ) / totalRows;
   const stdDevWidthPerCharPx = Math.sqrt(varianceWidthPerCharPx);
 
+  const percentile70Px = getPercentile(rows, 70);
+  const percentile80Px = getPercentile(rows, 80);
+  const percentile90Px = getPercentile(rows, 90);
+  const percentile95Px = getPercentile(rows, 95);
+  const percentile99Px = getPercentile(rows, 99);
+  const percentile100Px = getPercentile(rows, 100);
+
   return {
     averageStrLength,
     averageWidthPx,
@@ -1360,7 +1382,13 @@ const analyzeRows = (rows: Row[]): Analysis => {
     stdDevs3Px: stdDevWidthPx * 3 + averageWidthPx,
     stdDevs4Px: stdDevWidthPx * 4 + averageWidthPx,
     averageWidthPerCharPx,
-    stdDevWidthPerCharPx
+    stdDevWidthPerCharPx,
+    percentile70Px,
+    percentile80Px,
+    percentile90Px,
+    percentile95Px,
+    percentile99Px,
+    percentile100Px
   };
 };
 
@@ -1374,7 +1402,6 @@ const DataBar = ({ widthPx, label }: { widthPx: number, label: React.ReactElemen
     >
       <Box
         width={widthPx + "px"}
-        transition="width 0.2s ease-in-out"
         color="blue.500"
         borderTop="4px solid"
         borderRadius="100px"
@@ -1428,6 +1455,7 @@ function App() {
   // State
   const [strings, setStrings] = React.useState<string[]>(STRINGS);
   const [rowData, setRowData] = React.useState<any>({});
+  const [displayMode, setDisplayMode] = React.useState<"sigma" | "percentile">("percentile");
   const { isOpen, onClose, onOpen } = useDisclosure();
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
@@ -1529,11 +1557,26 @@ function App() {
             <Text opacity={0.7} fontSize="14px">
               Find the best width for a set of text
             </Text>
+
+            <ButtonGroup size="xs" ml="auto" isAttached>
+              <Button
+                colorScheme={displayMode === "percentile" ? "blue" : undefined}
+                onClick={() => setDisplayMode("percentile")}
+              >
+                Percentile
+              </Button>
+              <Button
+                colorScheme={displayMode === "sigma" ? "blue" : undefined}
+                onClick={() => setDisplayMode("sigma")}
+              >
+                Standard deviation
+              </Button>
+            </ButtonGroup>
           </HStack>
           <Box
-          sx={{
-            backdropFilter: "blur(32px)"
-          }}
+            sx={{
+              backdropFilter: "blur(32px)"
+            }}
             position="absolute"
             borderRadius="inherit"
             inset={0}
@@ -1571,31 +1614,83 @@ function App() {
               noOfLines={4}
               skeletonHeight={4}>
               <VStack align="flex-start" spacing={4} flex={1}>
-                <DataBar
-                  widthPx={analysis.averageWidthPx}
-                  label={
-                    <>
-                      <strong>Average</strong>
-                      <span>{analysis.averageStrLength} chars</span>
-                      <span>{analysis.averageWidthPx.toFixed()}px</span>
-                    </>
-                  }
-                />
-                <StDevBar
-                  analysis={analysis}
-                  pctCoverage={68}
-                  sdev={analysis.stdDevs1Px}
-                />
-                <StDevBar
-                  analysis={analysis}
-                  pctCoverage={95}
-                  sdev={analysis.stdDevs2Px}
-                />
-                <StDevBar
-                  analysis={analysis}
-                  pctCoverage={99.7}
-                  sdev={analysis.stdDevs3Px}
-                />
+                {displayMode === "sigma" ? (
+                  <>
+                    <DataBar
+                      widthPx={analysis.averageWidthPx}
+                      label={
+                        <>
+                          <strong>Average</strong>
+                          <span>{analysis.averageStrLength} chars</span>
+                          <span>{analysis.averageWidthPx.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                    <StDevBar
+                      analysis={analysis}
+                      pctCoverage={68}
+                      sdev={analysis.stdDevs1Px}
+                    />
+                    <StDevBar
+                      analysis={analysis}
+                      pctCoverage={95}
+                      sdev={analysis.stdDevs2Px}
+                    />
+                    <StDevBar
+                      analysis={analysis}
+                      pctCoverage={99.7}
+                      sdev={analysis.stdDevs3Px}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <DataBar
+                      widthPx={analysis.percentile70Px}
+                      label={
+                        <>
+                          <strong>70%</strong>
+                          <span>{analysis.percentile70Px?.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                    <DataBar
+                      widthPx={analysis.percentile90Px}
+                      label={
+                        <>
+                          <strong>90%</strong>
+                          <span>{analysis.percentile90Px?.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                    <DataBar
+                      widthPx={analysis.percentile95Px}
+                      label={
+                        <>
+                          <strong>95%</strong>
+                          <span>{analysis.percentile95Px?.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                    <DataBar
+                      widthPx={analysis.percentile99Px}
+                      label={
+                        <>
+                          <strong>99%</strong>
+                          <span>{analysis.percentile99Px?.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                    <DataBar
+                      widthPx={analysis.percentile100Px}
+                      label={
+                        <>
+                          <strong>100%</strong>
+                          <span>{analysis.percentile100Px?.toFixed()}px</span>
+                        </>
+                      }
+                    />
+                  </>
+                )}
               </VStack>
             </SkeletonText>
 
