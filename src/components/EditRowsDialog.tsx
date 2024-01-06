@@ -10,7 +10,7 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
   const initialValue = strings?.join("\n") || "";
   const [newValue, setNewValue] = React.useState<string>(initialValue);
 
-  const splitNewValue: string[] = newValue.split("\n");
+  const splitNewValue: string[] = newValue.split("\n").map((s) => s.trim());
 
   return (
     <Dialog.Root

@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { Text, Table, VStack, Button, Container, HStack, Box, Heading, Flex } from '~/components/ui'
+import { Text, Table, VStack, Button, HStack, Box, Heading, Flex } from '~/components/ui'
 import { SettingsProvider } from '~/components/SettingsContext'
 import { EditRowsDialog } from '~/components/EditRowsDialog'
 import { Row } from '~/components/Row'
@@ -17,20 +17,21 @@ export default function Home() {
   const [rowData, setRowData] = React.useState<any>({});
   const [displayMode, setDisplayMode] = React.useState<"sigma" | "percentile">("percentile");
   const [isOpen, setIsOpen] = React.useState(false)
-  const [analysis, setAnalysis] = React.useState<any>(null)
 
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
     fontStyle: fontStyles[1]
   });
 
+
   // Fn to push row data up to state after a row has been rendered
   const logRow = React.useCallback(
-    (id: string, rowData: Row) => {
-      setRowData((prev: Row) => ({ ...prev, [id]: rowData }));
+    (key: string, rowData: Row) => {
+      setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
     },
     [strings, settings]
   );
+
 
   const handleUpdateStyle = React.useCallback((label: string) => {
     const fontStyle = fontStyles.find((fs) => fs.label === label);
@@ -40,25 +41,26 @@ export default function Home() {
       fontStyle: fontStyle
     }) as Settings);
 
-    setRowData([]);
+    setRowData({});
   }, []);
+
 
   // When the rows have been edited
   const handleUpdateRows = React.useCallback((newStringArr: string[]) => {
-    setRowData([]);
+    setRowData({});
     setStrings(newStringArr);
     setIsOpen(false);
   }, []);
 
+
   // Map rowData to an array
-  const resultsArr: Row[] = Object.keys(rowData).map((rowKey) => ({
+  const resultsArr: Row[] = React.useMemo(() => Object.keys(rowData).map((rowKey) => ({
     id: rowKey,
     ...rowData[rowKey]
-  }));
+  })), [rowData]);
 
-  React.useEffect(() => {
-    setAnalysis(analyzeRows(resultsArr))
-  }, [resultsArr])
+
+  const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr])
 
   return (
     <SettingsProvider value={settings}>
@@ -218,43 +220,28 @@ export default function Home() {
             </Flex>
           </HStack>
         </VStack>
-
-        {settings.performanceMode ? (
-          <VStack alignItems="flex-start" p={6} gap={7}>
+        <Table.Root>
+          <Table.Head>
+            <Table.Row>
+              <Table.Cell>String</Table.Cell>
+              <Table.Cell textAlign="end">Width</Table.Cell>
+              <Table.Cell textAlign="end">Per char</Table.Cell>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
             {strings.map((str, index) => {
               const key = str + index;
               return (
                 <Row
                   str={str}
                   key={key}
+                  isLogged={!!rowData[key]}
                   logRow={(rowData) => logRow(key, rowData)}
                 />
               );
             })}
-          </VStack>
-        ) : (
-          <Table.Root>
-            <Table.Head>
-              <Table.Row>
-                <Table.Cell>String</Table.Cell>
-                <Table.Cell textAlign="end">Width</Table.Cell>
-                <Table.Cell textAlign="end">Per char</Table.Cell>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
-              {strings.map((str, index) => {
-                const key = str + index;
-                return (
-                  <Row
-                    str={str}
-                    key={key}
-                    logRow={(rowData) => logRow(key, rowData)}
-                  />
-                );
-              })}
-            </Table.Body>
-          </Table.Root>
-        )}
+          </Table.Body>
+        </Table.Root>
       </VStack>
 
     </SettingsProvider>

@@ -7,25 +7,24 @@ import { Text, Table } from "./ui";
 
 type RowProps = {
   str: string;
+  isLogged: boolean;
   logRow: (rowData: Row) => void;
 };
 
-export const Row = React.forwardRef(({ str, logRow }: RowProps, ref: React.Ref<HTMLTableRowElement> | undefined) => {
+export const Row = React.forwardRef(({ isLogged, str, logRow }: RowProps, ref: React.Ref<HTMLTableRowElement> | undefined) => {
   const settings = React.useContext(SettingsContext);
   const elementRef = React.useRef<any>(null);
 
   const width = useResizedDimensions(elementRef, settings);
   const widthPerChar = width && width / str.length;
 
-  React.useEffect(() => {
-    if (widthPerChar && typeof widthPerChar === "number") {
-      logRow({
-        widthPerChar,
-        str,
-        width: width
-      });
-    }
-  }, [widthPerChar, width, settings]);
+  if (!isLogged && widthPerChar && typeof widthPerChar === "number") {
+    logRow({
+      widthPerChar,
+      str,
+      width: width
+    });
+  }
 
   const textEl = (
     <Text {...settings.fontStyle.props} width="max-content" ref={elementRef}>
