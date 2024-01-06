@@ -10,4 +10,10 @@ export default defineConfig({
   },
   jsxFramework: 'react',
   outdir: 'styled-system',
+
+  conditions: {
+    light: '[data-color-mode=light] &',
+    dark: '[data-color-mode=dark] &',
+  }
+
 })

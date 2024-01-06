@@ -111,10 +111,10 @@ export default function Home() {
                 bg: "var(--chakra-colors-chakra-border-color)"
               }}
             >
-              <Heading opacity={0.7} fontSize="14px">
+              <Heading fontSize="14px" color="fg.muted">
                 Measure Text Width
               </Heading>
-              <Text opacity={0.7}>
+              <Text color="fg.muted">
                 Find the best width for a set of text
               </Text>
 

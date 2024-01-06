@@ -12,7 +12,7 @@ import './global.css'
 const RootLayout = (props: PropsWithChildren) => {
   const { children } = props
   return (
-    <html lang="en">
+    <html lang="en" data-color-mode="dark">
       <body>{children}</body>
     </html>
   )
