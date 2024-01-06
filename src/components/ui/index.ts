@@ -8,6 +8,7 @@ export * as Table from './table';
 
 // Simple components
 
+export { Heading } from './heading';
 export { Text } from './text';
 export { Button } from './button';
 export { Textarea } from './textarea';
@@ -18,7 +19,7 @@ export { Portal } from '@ark-ui/react';
 
 // Layout patterns
 
-export { Box, Stack, VStack, HStack, Container, Grid } from 'styled-system/jsx';
+export { Box, Stack, VStack, HStack, Container, Flex, Grid } from 'styled-system/jsx';
 
 // utilities
 

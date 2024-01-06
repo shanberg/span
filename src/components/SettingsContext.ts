@@ -1,3 +1,5 @@
+'use client'
+
 import { fontStyles } from "~/lib/styles";
 import React from "react";
 

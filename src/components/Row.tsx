@@ -1,3 +1,5 @@
+'use client'
+
 import React from "react";
 import { useResizedDimensions } from "~/hooks/useResizedDimensions";
 import { SettingsContext } from "./SettingsContext";

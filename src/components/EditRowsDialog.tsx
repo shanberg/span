@@ -15,15 +15,18 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
   return (
     <Dialog.Root
       open={isOpen}
-      onOpenChange={onClose}
+      onOpenChange={(details) => {
+        if (details.open === false) {
+          onClose();
+        }
+      }}
     >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content p={4}>
             <Dialog.Title>Edit Rows</Dialog.Title>
             <Dialog.Description>Add text separated by new line</Dialog.Description>
-            <Dialog.CloseTrigger>Close</Dialog.CloseTrigger>
 
             <Textarea
               borderRadius="none"
@@ -34,7 +37,8 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
               rows={20}
               onChange={(e) => setNewValue(e.target.value)}
             />
-            <HStack>
+
+            <HStack px={4}>
               <Dialog.CloseTrigger>Cancel</Dialog.CloseTrigger>
               <Button
                 onClick={() => {
