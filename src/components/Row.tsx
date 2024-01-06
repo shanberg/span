@@ -10,7 +10,7 @@ type RowProps = {
   logRow: (rowData: Row) => void;
 };
 
-export const Row = ({ str, logRow }: RowProps) => {
+export const Row = React.forwardRef(({ str, logRow }: RowProps, ref: React.Ref<HTMLTableRowElement> | undefined) => {
   const settings = React.useContext(SettingsContext);
   const elementRef = React.useRef<any>(null);
 
@@ -37,11 +37,11 @@ export const Row = ({ str, logRow }: RowProps) => {
     return textEl;
   } else {
     return (
-      <Table.Row>
+      <Table.Row ref={ref}>
         <Table.Cell whiteSpace="nowrap">{textEl}</Table.Cell>
         <Table.Cell textAlign="end">{width && width.toFixed(2)}</Table.Cell>
         <Table.Cell textAlign="end">{widthPerChar?.toFixed(1)}</Table.Cell>
       </Table.Row>
     );
   }
-};
+});

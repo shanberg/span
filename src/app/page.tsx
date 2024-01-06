@@ -56,6 +56,7 @@ export default function Home() {
   }));
 
   const analysis = analyzeRows(resultsArr);
+
   return (
     <SettingsProvider value={settings}>
       <Container py={{ base: '12', md: '16' }} maxW="7xl">
