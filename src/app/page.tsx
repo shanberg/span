@@ -17,6 +17,7 @@ export default function Home() {
   const [rowData, setRowData] = React.useState<any>({});
   const [displayMode, setDisplayMode] = React.useState<"sigma" | "percentile">("percentile");
   const [isOpen, setIsOpen] = React.useState(false)
+  const [analysis, setAnalysis] = React.useState<any>(null)
 
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
@@ -55,189 +56,192 @@ export default function Home() {
     ...rowData[rowKey]
   }));
 
-  const analysis = analyzeRows(resultsArr);
+  React.useEffect(() => {
+    setAnalysis(analyzeRows(resultsArr))
+  }, [resultsArr])
 
   return (
     <SettingsProvider value={settings}>
-      <Container py={{ base: '12', md: '16' }} maxW="7xl">
 
-        <EditRowsDialog
-          onUpdateRows={handleUpdateRows}
-          strings={strings}
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-        />
-        <VStack minHeight="100vh" p={4} alignItems="stretch">
-          {/* Controls */}
-          <VStack
-            alignItems="flex-start"
-            gap={4}
-            boxShadow="
-            inset 0 0 20px 20px var(--chakra-colors-chakra-body-bg),
-            0 0 1px #00000050,
-            0 8px 12px #00000011
-          "
-            p={6}
-            borderRadius="8px"
-            position="sticky"
-            overflow="hidden"
-            top={4}
-            _after={{
-              pointerEvents: "none",
-              content: "''",
-              position: "absolute",
-              inset: 0,
-              borderRadius: "inherit",
-              boxShadow: "inset 0 0 0 0.5px #ffffff1a"
-            }}
+      <EditRowsDialog
+        onUpdateRows={handleUpdateRows}
+        strings={strings}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+
+      <VStack
+        minHeight="100vh"
+        p={4}
+        alignItems="stretch"
+        justifyContent="flex-start"
+      >
+        {/* Controls */}
+        <VStack
+          alignItems="flex-start"
+          gap={4}
+          background="bg.muted"
+          p={6}
+          borderRadius="xl"
+          overflow="hidden"
+          position="sticky"
+          top={4}
+        >
+          <HStack
+            alignSelf="stretch"
           >
-            <HStack
-              position="relative"
-              px={6}
-              py={1}
-              margin={-6}
-              mb={2}
-              alignSelf="stretch"
-              width="auto"
-              bottom="auto"
-              _after={{
-                content: "''",
-                position: "absolute",
-                height: "1px",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                opacity: 0.5,
-                bg: "var(--chakra-colors-chakra-border-color)"
-              }}
-            >
-              <Heading fontSize="14px" color="fg.muted">
-                Measure Text Width
-              </Heading>
-              <Text color="fg.muted">
-                Find the best width for a set of text
-              </Text>
+            <Heading fontSize="14px" color="fg.muted">
+              Measure Text Width
+            </Heading>
+            <Text color="fg.muted">
+              Find the best width for a set of text
+            </Text>
 
-              <HStack ml="auto">
-                <Button
-                  colorScheme={displayMode === "percentile" ? "blue" : undefined}
-                  onClick={() => setDisplayMode("percentile")}
-                >
-                  Percentile
-                </Button>
-                <Button
-                  colorScheme={displayMode === "sigma" ? "blue" : undefined}
-                  onClick={() => setDisplayMode("sigma")}
-                >
-                  Standard deviation
-                </Button>
-              </HStack>
-            </HStack>
-
-            <HStack
-              justifyContent="space-between"
-              alignSelf="stretch"
-              alignItems="flex-start"
-            >
-              <Box
-                minWidth="50%">
-                <VStack alignItems="flex-start" gap={4} flex={1}>
-                  {displayMode === "sigma" ? (
-                    <>
-                      <DataBar
-                        widthPx={analysis.averageWidthPx}
-                        label={
-                          <>
-                            <strong>Average</strong>
-                            <span>{analysis.averageStrLength} chars</span>
-                            <span>{analysis.averageWidthPx.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                      <StDevBar
-                        analysis={analysis}
-                        pctCoverage={68}
-                        sdev={analysis.stdDevs1Px}
-                      />
-                      <StDevBar
-                        analysis={analysis}
-                        pctCoverage={95}
-                        sdev={analysis.stdDevs2Px}
-                      />
-                      <StDevBar
-                        analysis={analysis}
-                        pctCoverage={99.7}
-                        sdev={analysis.stdDevs3Px}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <DataBar
-                        widthPx={analysis.percentile70Px}
-                        label={
-                          <>
-                            <strong>70%</strong>
-                            <span>{analysis.percentile70Px?.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                      <DataBar
-                        widthPx={analysis.percentile90Px}
-                        label={
-                          <>
-                            <strong>90%</strong>
-                            <span>{analysis.percentile90Px?.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                      <DataBar
-                        widthPx={analysis.percentile95Px}
-                        label={
-                          <>
-                            <strong>95%</strong>
-                            <span>{analysis.percentile95Px?.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                      <DataBar
-                        widthPx={analysis.percentile99Px}
-                        label={
-                          <>
-                            <strong>99%</strong>
-                            <span>{analysis.percentile99Px?.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                      <DataBar
-                        widthPx={analysis.percentile100Px}
-                        label={
-                          <>
-                            <strong>100%</strong>
-                            <span>{analysis.percentile100Px?.toFixed()}px</span>
-                          </>
-                        }
-                      />
-                    </>
-                  )}
-                </VStack>
-              </Box>
-
-              <Flex
-                gap={2}
-                minWidth="8em"
-                alignItems="stretch"
-                flexDirection="column"
-                whiteSpace="nowrap"
+            <HStack ml="auto">
+              <Button
+                colorScheme={displayMode === "percentile" ? "blue" : undefined}
+                onClick={() => setDisplayMode("percentile")}
               >
-                <Button flexShrink={0} colorScheme="blue" onClick={() => setIsOpen(true)}>
-                  Edit Rows
-                </Button>
-              </Flex>
+                Percentile
+              </Button>
+              <Button
+                colorScheme={displayMode === "sigma" ? "blue" : undefined}
+                onClick={() => setDisplayMode("sigma")}
+              >
+                Standard deviation
+              </Button>
             </HStack>
-          </VStack>
+          </HStack>
 
-          {settings.performanceMode ? (
-            <VStack alignItems="flex-start" p={6} gap={7}>
+          <HStack
+            justifyContent="space-between"
+            alignSelf="stretch"
+            alignItems="flex-start"
+          >
+            <Box
+              minWidth="50%">
+              <VStack alignItems="flex-start" gap={4} flex={1}>
+                {analysis && (
+                  <>
+                    {displayMode === "sigma" ? (
+                      <>
+                        <DataBar
+                          widthPx={analysis.averageWidthPx}
+                          label={
+                            <>
+                              <strong>Average</strong>
+                              <span>{analysis.averageStrLength} chars</span>
+                              <span>{analysis.averageWidthPx.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                        <StDevBar
+                          analysis={analysis}
+                          pctCoverage={68}
+                          sdev={analysis.stdDevs1Px}
+                        />
+                        <StDevBar
+                          analysis={analysis}
+                          pctCoverage={95}
+                          sdev={analysis.stdDevs2Px}
+                        />
+                        <StDevBar
+                          analysis={analysis}
+                          pctCoverage={99.7}
+                          sdev={analysis.stdDevs3Px}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <DataBar
+                          widthPx={analysis.percentile70Px}
+                          label={
+                            <>
+                              <strong>70%</strong>
+                              <span>{analysis.percentile70Px?.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                        <DataBar
+                          widthPx={analysis.percentile90Px}
+                          label={
+                            <>
+                              <strong>90%</strong>
+                              <span>{analysis.percentile90Px?.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                        <DataBar
+                          widthPx={analysis.percentile95Px}
+                          label={
+                            <>
+                              <strong>95%</strong>
+                              <span>{analysis.percentile95Px?.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                        <DataBar
+                          widthPx={analysis.percentile99Px}
+                          label={
+                            <>
+                              <strong>99%</strong>
+                              <span>{analysis.percentile99Px?.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                        <DataBar
+                          widthPx={analysis.percentile100Px}
+                          label={
+                            <>
+                              <strong>100%</strong>
+                              <span>{analysis.percentile100Px?.toFixed()}px</span>
+                            </>
+                          }
+                        />
+                      </>
+                    )}
+                  </>
+                )}
+              </VStack>
+            </Box>
+
+            <Flex
+              gap={2}
+              minWidth="8em"
+              alignItems="stretch"
+              flexDirection="column"
+              whiteSpace="nowrap"
+            >
+              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsOpen(true)}>
+                Edit Rows
+              </Button>
+            </Flex>
+          </HStack>
+        </VStack>
+
+        {settings.performanceMode ? (
+          <VStack alignItems="flex-start" p={6} gap={7}>
+            {strings.map((str, index) => {
+              const key = str + index;
+              return (
+                <Row
+                  str={str}
+                  key={key}
+                  logRow={(rowData) => logRow(key, rowData)}
+                />
+              );
+            })}
+          </VStack>
+        ) : (
+          <Table.Root>
+            <Table.Head>
+              <Table.Row>
+                <Table.Cell>String</Table.Cell>
+                <Table.Cell textAlign="end">Width</Table.Cell>
+                <Table.Cell textAlign="end">Per char</Table.Cell>
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
               {strings.map((str, index) => {
                 const key = str + index;
                 return (
@@ -248,33 +252,11 @@ export default function Home() {
                   />
                 );
               })}
-            </VStack>
-          ) : (
-            <Table.Root margin="auto" width="100%">
-              <Table.Head>
-                <Table.Row>
-                  <Table.Cell>String</Table.Cell>
-                  <Table.Cell textAlign="end">Width</Table.Cell>
-                  <Table.Cell textAlign="end">Per char</Table.Cell>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
-                {strings.map((str, index) => {
-                  const key = str + index;
-                  return (
-                    <Row
-                      str={str}
-                      key={key}
-                      logRow={(rowData) => logRow(key, rowData)}
-                    />
-                  );
-                })}
-              </Table.Body>
-            </Table.Root>
-          )}
-        </VStack>
+            </Table.Body>
+          </Table.Root>
+        )}
+      </VStack>
 
-      </Container>
     </SettingsProvider>
   )
 }

@@ -5,19 +5,18 @@ export const DataBar = ({ widthPx, label }: { widthPx: number, label: React.Reac
     <VStack
       position="relative"
       alignItems="flex-start"
-      gap={0}
-      borderRadius="4px"
+      gap={1}
     >
-      <Box
-        width={widthPx + "px"}
-        color="blue.500"
-        borderTop="4px solid"
-        borderRadius="100px"
-        boxShadow="0 1px 6px -1px"
-      />
       <Grid columns={3} gap={3} width="14em">
         {label}
       </Grid>
+      <Box
+        style={{
+          width: widthPx + "px",
+        }}
+        bg="fg.muted"
+        height="4px"
+      />
     </VStack>
   );
 };
