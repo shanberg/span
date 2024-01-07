@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { styled, RadioButtonGroup, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
 import { SettingsProvider } from '~/components/SettingsContext'
 import { EditRowsDialog } from '~/components/EditRowsDialog'
@@ -10,7 +9,7 @@ import { Row } from '~/components/Row'
 import { DataBar } from '~/components/DataBar'
 import { StDevBar } from '~/components/StDevBar'
 import { analyzeRows } from '~/util'
-import { STRINGS } from '~/lib/data'
+import { STRINGS, TAGLINE, HELP } from '~/lib/data'
 import Link from 'next/link'
 
 const StyledLink = styled(Link)
@@ -111,21 +110,20 @@ export default function Home() {
           gap={4}
           py={4}
         >
-          <HStack
+          <Flex
+            flexWrap={{ base: "wrap", md: "nowrap" }}
             alignSelf="stretch"
             alignItems="center"
             gap={4}
           >
-            <img src="/icon.svg" alt="Icon" width="64" height="64" />
-            <VStack alignItems="flex-start" gap={0}>
-              <Heading fontSize="lg">
-                Find the right width for text
-              </Heading>
-              <Text color="fg.muted" fontSize="xs">
-                Add a sample of text strings to see how wide they are. Match styles to your app for better results.
-              </Text>
-              <Text color="fg.muted" fontSize="xs">by <StyledLink textDecoration="underline" href="https://codeandchrome.com">Code & Chrome</StyledLink></Text>
-            </VStack>
+            <HStack gap={4}>
+              <img src="/icon.svg" alt="Icon" width="64" height="64" />
+              <VStack alignItems="flex-start" gap={0}>
+                <Heading fontSize="lg" lineHeight="normal">{TAGLINE}</Heading>
+                <Text color="fg.muted" fontSize="xs">{HELP}</Text>
+                <Text color="fg.muted" fontSize="xs">by{' '}<StyledLink textDecoration="underline" href="https://codeandchrome.com">Code & Chrome</StyledLink></Text>
+              </VStack>
+            </HStack>
 
             <Flex
               gap={2}
@@ -145,7 +143,7 @@ export default function Home() {
               </Button>
             </Flex>
 
-          </HStack>
+          </Flex>
 
         </VStack>
         <VStack

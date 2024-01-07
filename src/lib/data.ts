@@ -999,5 +999,8 @@ export const STRINGS = [
   "UtEratCurabitur.txt",
   "MontesNascetur.ppt",
   "UltricesPosuere.mp3",
-
 ];
+
+export const TITLE = "Span"
+export const TAGLINE = "Find the right size for your text"
+export const HELP = "Add a sample of text strings to see how wide they are. Match styles to your app for better results."
