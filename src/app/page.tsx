@@ -22,31 +22,51 @@ const displayModes = [
 ]
 
 export default function Home() {
+
+  // Prepare state
+
+  // Strings store the specific content you want to measure
   const [strings, setStrings] = React.useState<string[]>(STRINGS);
+
+  // Rowdata stores the results of measuring each string
   const [rowData, setRowData] = React.useState<any>({});
+
+  // Render is a dummy state that is used to force a re-render
+  const [render, setRender] = React.useState(false);
+
+  // Display mode
   const [displayMode, setDisplayMode] = React.useState<DisplayMode>("percentile");
+
+  // Dialogs
   const [isTextOpen, setIsTextOpen] = React.useState(false)
   const [isStylesOpen, setIsStylesOpen] = React.useState(false)
-  const prevAnalysis = React.useRef<Analysis | undefined>(undefined)
 
+  // Settings
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
     styles: ""
   });
 
+  // Store the previous analysis for loading state
+  const prevAnalysis = React.useRef<Analysis | undefined>(undefined)
+
+  // Event handlers
+
   // Fn to push row data up to state after a row has been rendered
-  const logRow = (key: string, rowData: Row) => {
+  // Each row gets this function as a prop, and fires it when it has been rendered
+  const logRow = React.useCallback((key: string, rowData: Row) => {
     setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
-  }
+  }, [])
 
   // When the rows have been edited
   const handleUpdateRows = React.useCallback((newStringArr: string[]) => {
     setRowData({});
     setStrings(newStringArr);
     setIsTextOpen(false);
+    setRender((prev) => !prev);
   }, []);
 
-
+  // When the styles have been edited
   const handleUpdateStyles = React.useCallback((styles: string) => {
     setSettings((settings) => ({
       ...settings,
@@ -54,30 +74,39 @@ export default function Home() {
     }) as Settings);
     setRowData({});
     setIsStylesOpen(false);
+    setRender((prev) => !prev);
   }, []);
 
+  // Reactive data
 
   // Map rowData to an array
   const resultsArr: Row[] = React.useMemo(() => Object.keys(rowData).map((rowKey) => ({
     id: rowKey,
     ...rowData[rowKey]
-  })), [rowData, settings.styles]);
+  })), [rowData]);
 
+  // Generate CSS string from styles
   const cssString = `.measured-row {${settings.styles}}`
 
-  const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr, rowData, settings.styles])
+  // Analyze the rows
+  const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr])
 
+  // Check if analysis is pending
   const isAnalysisPending = !analysis?.averageStrLength || isNaN(analysis?.averageStrLength)
 
+  // Store the previous analysis for loading state
   if (!isAnalysisPending) {
     prevAnalysis.current = analysis
   }
 
+  // Current Or Previous Analysis
   const cOPA = prevAnalysis.current
     ? isAnalysisPending
       ? prevAnalysis.current
       : analysis
     : analysis
+
+  console.log({ cOPA, analysis, prevAnalysis: prevAnalysis.current })
 
   return (
     <SettingsProvider value={settings}>
@@ -281,18 +310,8 @@ export default function Home() {
                   px={2}
                   height="auto"
                 >
-                  {/* <Tooltip.Root key={id}> */}
-                  {/* <Tooltip.Trigger> */}
                   <RadioButtonGroup.ItemControl />
                   <RadioButtonGroup.ItemText>{label}</RadioButtonGroup.ItemText>
-                  {/* </Tooltip.Trigger> */}
-                  {/* <Tooltip.Positioner> */}
-                  {/* <Tooltip.Arrow> */}
-                  {/* <Tooltip.ArrowTip /> */}
-                  {/* </Tooltip.Arrow> */}
-                  {/* <Tooltip.Content>{help}</Tooltip.Content> */}
-                  {/* </Tooltip.Positioner> */}
-                  {/* </Tooltip.Root> */}
                 </RadioButtonGroup.Item>
               ))}
             </RadioButtonGroup.Root>
@@ -310,7 +329,7 @@ export default function Home() {
           </Table.Head>
           <Table.Body>
             {strings.map((str, index) => {
-              const key = str + index;
+              const key = str + index + JSON.stringify(render);
               return (
                 <Row
                   str={str}
