@@ -6,19 +6,8 @@ type Row = {
 };
 
 type Settings = {
-  performanceMode: boolean;
   styles: string;
 };
-
-type FontStyle = {
-  label: string;
-  props: {
-    fontSize: string;
-    fontWeight: string;
-    fontFamily: string;
-  };
-};
-
 
 type Analysis = {
   averageStrLength: number;

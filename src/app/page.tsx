@@ -43,7 +43,6 @@ export default function Home() {
 
   // Settings
   const [settings, setSettings] = React.useState<Settings>({
-    performanceMode: false,
     styles: ""
   });
 
@@ -105,8 +104,6 @@ export default function Home() {
       ? prevAnalysis.current
       : analysis
     : analysis
-
-  console.log({ cOPA, analysis, prevAnalysis: prevAnalysis.current })
 
   return (
     <SettingsProvider value={settings}>
