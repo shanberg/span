@@ -2,9 +2,10 @@
 
 import React from 'react'
 
-import { Text, Table, VStack, Button, HStack, Box, Heading, Flex } from '~/components/ui'
+import { RadioButtonGroup, Divider, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
 import { SettingsProvider } from '~/components/SettingsContext'
 import { EditRowsDialog } from '~/components/EditRowsDialog'
+import { EditStylesDialog } from '~/components/EditStylesDialog'
 import { Row } from '~/components/Row'
 import { DataBar } from '~/components/DataBar'
 import { StDevBar } from '~/components/StDevBar'
@@ -12,44 +13,49 @@ import { analyzeRows } from '~/util'
 import { fontStyles } from '~/lib/styles'
 import { STRINGS } from '~/lib/data'
 
+type DisplayMode = "sigma" | "percentile"
+
+const displayModes = [
+  { id: "sigma", label: "Standard deviation" },
+  { id: "percentile", label: "Percentile" }
+]
+
 export default function Home() {
   const [strings, setStrings] = React.useState<string[]>(STRINGS);
   const [rowData, setRowData] = React.useState<any>({});
-  const [displayMode, setDisplayMode] = React.useState<"sigma" | "percentile">("percentile");
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [displayMode, setDisplayMode] = React.useState<DisplayMode>("percentile");
+  const [isTextOpen, setIsTextOpen] = React.useState(false)
+  const [isStylesOpen, setIsStylesOpen] = React.useState(false)
+  const [prevAnalysis, setPrevAnalysis] = React.useState<analysis | undefined>(null)
 
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
-    fontStyle: fontStyles[1]
+    styles: ""
   });
-
 
   // Fn to push row data up to state after a row has been rendered
   const logRow = React.useCallback(
     (key: string, rowData: Row) => {
       setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
     },
-    [strings, settings]
+    [strings, settings.styles]
   );
-
-
-  const handleUpdateStyle = React.useCallback((label: string) => {
-    const fontStyle = fontStyles.find((fs) => fs.label === label);
-
-    setSettings((settings) => ({
-      ...settings,
-      fontStyle: fontStyle
-    }) as Settings);
-
-    setRowData({});
-  }, []);
-
 
   // When the rows have been edited
   const handleUpdateRows = React.useCallback((newStringArr: string[]) => {
     setRowData({});
     setStrings(newStringArr);
-    setIsOpen(false);
+    setIsTextOpen(false);
+  }, []);
+
+
+  const handleUpdateStyles = React.useCallback((styles: string) => {
+    setSettings((settings) => ({
+      ...settings,
+      styles
+    }) as Settings);
+    setRowData({});
+    setIsStylesOpen(false);
   }, []);
 
 
@@ -57,10 +63,15 @@ export default function Home() {
   const resultsArr: Row[] = React.useMemo(() => Object.keys(rowData).map((rowKey) => ({
     id: rowKey,
     ...rowData[rowKey]
-  })), [rowData]);
-
-
+  })), [rowData, settings.styles]);
+  const cssString = `.measured-row {${settings.styles}}`
   const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr])
+  const isAnalysisPending = !analysis?.averageStrLength || isNaN(analysis?.averageStrLength)
+  const cOPA = prevAnalysis
+    ? isAnalysisPending
+      ? prevAnalysis
+      : analysis
+    : analysis
 
   return (
     <SettingsProvider value={settings}>
@@ -68,9 +79,18 @@ export default function Home() {
       <EditRowsDialog
         onUpdateRows={handleUpdateRows}
         strings={strings}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isTextOpen}
+        onClose={() => setIsTextOpen(false)}
       />
+
+      <EditStylesDialog
+        onUpdateStyles={handleUpdateStyles}
+        styles={{}}
+        isOpen={isStylesOpen}
+        onClose={() => setIsStylesOpen(false)}
+      />
+
+      <style>{cssString}</style>
 
       <VStack
         minHeight="100vh"
@@ -82,142 +102,182 @@ export default function Home() {
         <VStack
           alignItems="flex-start"
           gap={4}
-          background="bg.muted"
-          p={6}
+          p={4}
           borderRadius="xl"
           overflow="hidden"
           position="sticky"
+          zIndex={10}
           top={4}
+          _after={{
+            content: "''",
+            position: "absolute",
+            zIndex: -2,
+            inset: 0,
+            boxShadow: "inset 0 0 32px var(--colors-bg-subtle)",
+            backdropFilter: "blur(12px)",
+            pointerEvents: "none",
+            borderRadius: "inherit"
+          }}
+          _before={{
+            background: "bg.muted",
+            content: "''",
+            position: "absolute",
+            opacity: 0.5,
+            zIndex: -1,
+            inset: 0,
+            pointerEvents: "none",
+            borderRadius: "inherit"
+          }}
         >
           <HStack
             alignSelf="stretch"
+            alignItems="center"
+            gap={4}
           >
-            <Heading fontSize="14px" color="fg.muted">
-              Measure Text Width
-            </Heading>
-            <Text color="fg.muted">
-              Find the best width for a set of text
-            </Text>
-
-            <HStack ml="auto">
-              <Button
-                colorScheme={displayMode === "percentile" ? "blue" : undefined}
-                onClick={() => setDisplayMode("percentile")}
-              >
-                Percentile
-              </Button>
-              <Button
-                colorScheme={displayMode === "sigma" ? "blue" : undefined}
-                onClick={() => setDisplayMode("sigma")}
-              >
-                Standard deviation
-              </Button>
-            </HStack>
-          </HStack>
-
-          <HStack
-            justifyContent="space-between"
-            alignSelf="stretch"
-            alignItems="flex-start"
-          >
-            <Box
-              minWidth="50%">
-              <VStack alignItems="flex-start" gap={4} flex={1}>
-                {analysis && (
-                  <>
-                    {displayMode === "sigma" ? (
-                      <>
-                        <DataBar
-                          widthPx={analysis.averageWidthPx}
-                          label={
-                            <>
-                              <strong>Average</strong>
-                              <span>{analysis.averageStrLength} chars</span>
-                              <span>{analysis.averageWidthPx.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                        <StDevBar
-                          analysis={analysis}
-                          pctCoverage={68}
-                          sdev={analysis.stdDevs1Px}
-                        />
-                        <StDevBar
-                          analysis={analysis}
-                          pctCoverage={95}
-                          sdev={analysis.stdDevs2Px}
-                        />
-                        <StDevBar
-                          analysis={analysis}
-                          pctCoverage={99.7}
-                          sdev={analysis.stdDevs3Px}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <DataBar
-                          widthPx={analysis.percentile70Px}
-                          label={
-                            <>
-                              <strong>70%</strong>
-                              <span>{analysis.percentile70Px?.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                        <DataBar
-                          widthPx={analysis.percentile90Px}
-                          label={
-                            <>
-                              <strong>90%</strong>
-                              <span>{analysis.percentile90Px?.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                        <DataBar
-                          widthPx={analysis.percentile95Px}
-                          label={
-                            <>
-                              <strong>95%</strong>
-                              <span>{analysis.percentile95Px?.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                        <DataBar
-                          widthPx={analysis.percentile99Px}
-                          label={
-                            <>
-                              <strong>99%</strong>
-                              <span>{analysis.percentile99Px?.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                        <DataBar
-                          widthPx={analysis.percentile100Px}
-                          label={
-                            <>
-                              <strong>100%</strong>
-                              <span>{analysis.percentile100Px?.toFixed()}px</span>
-                            </>
-                          }
-                        />
-                      </>
-                    )}
-                  </>
-                )}
-              </VStack>
-            </Box>
+            <img src="/icon.svg" alt="Icon" width="64" height="64" />
+            <VStack alignItems="flex-start" gap={0}>
+              <Heading fontSize="lg">
+                Find the right width for text
+              </Heading>
+              <Text color="fg.muted">
+                Add your text → update the styles
+              </Text>
+            </VStack>
 
             <Flex
               gap={2}
+              p={4}
+              ml="auto"
               minWidth="8em"
               alignItems="stretch"
-              flexDirection="column"
+              flexDirection="row"
               whiteSpace="nowrap"
             >
-              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsOpen(true)}>
-                Edit Rows
+              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsTextOpen(true)}>
+                Add text
+              </Button>
+              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsStylesOpen(true)}>
+                Edit styles
               </Button>
             </Flex>
+
+          </HStack>
+
+          <Divider color="bg.subtle" />
+
+          <HStack
+            justifyContent="flex-start"
+            alignSelf="stretch"
+            alignItems="flex-start"
+            pr={4}
+            pb={2}
+          >
+            <VStack alignItems="flex-start" gap={4} flex={1}
+              opacity={isAnalysisPending ? 0.5 : 1}
+            >
+              {analysis && (
+                <>
+                  {displayMode === "sigma" ? (
+                    <>
+                      <DataBar
+                        widthPx={cOPA.averageWidthPx}
+                        label={
+                          <>
+                            <strong>Average</strong>
+                            <span>{cOPA.averageStrLength} chars</span>
+                            <span>{cOPA.averageWidthPx.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                      <StDevBar
+                        analysis={cOPA}
+                        pctCoverage={68}
+                        sdev={cOPA.stdDevs1Px}
+                      />
+                      <StDevBar
+                        analysis={cOPA}
+                        pctCoverage={95}
+                        sdev={cOPA.stdDevs2Px}
+                      />
+                      <StDevBar
+                        analysis={cOPA}
+                        pctCoverage={99.7}
+                        sdev={cOPA.stdDevs3Px}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <DataBar
+                        widthPx={cOPA.percentile70Px}
+                        label={
+                          <>
+                            <strong>70%</strong>
+                            <span>{cOPA.percentile70Px?.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                      <DataBar
+                        widthPx={cOPA.percentile90Px}
+                        label={
+                          <>
+                            <strong>90%</strong>
+                            <span>{cOPA.percentile90Px?.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                      <DataBar
+                        widthPx={cOPA.percentile95Px}
+                        label={
+                          <>
+                            <strong>95%</strong>
+                            <span>{cOPA.percentile95Px?.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                      <DataBar
+                        widthPx={cOPA.percentile99Px}
+                        label={
+                          <>
+                            <strong>99%</strong>
+                            <span>{cOPA.percentile99Px?.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                      <DataBar
+                        widthPx={cOPA.percentile100Px}
+                        label={
+                          <>
+                            <strong>100%</strong>
+                            <span>{cOPA.percentile100Px?.toFixed()}px</span>
+                          </>
+                        }
+                      />
+                    </>
+                  )}
+                </>
+              )}
+            </VStack>
+
+
+            <RadioButtonGroup.Root
+              variant="outline"
+              size="sm"
+              onValueChange={(value) => setDisplayMode(value.value as DisplayMode)}
+              defaultValue={displayMode}
+            >
+              {displayModes.map((option) => (
+                <RadioButtonGroup.Item key={option.id} value={option.id}
+                  py={1}
+                  px={2}
+                  height="auto"
+                >
+                  <RadioButtonGroup.ItemControl />
+                  <RadioButtonGroup.ItemText>{option.label}</RadioButtonGroup.ItemText>
+                </RadioButtonGroup.Item>
+              ))}
+            </RadioButtonGroup.Root>
+
+
           </HStack>
         </VStack>
         <Table.Root>

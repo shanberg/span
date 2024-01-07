@@ -7,7 +7,7 @@ type Row = {
 
 type Settings = {
   performanceMode: boolean;
-  fontStyle: FontStyle;
+  styles: string;
 };
 
 type FontStyle = {

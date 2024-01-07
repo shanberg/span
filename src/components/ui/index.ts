@@ -5,6 +5,7 @@ export * as Slider from './slider';
 export * as Tabs from './tabs';
 export * as RadioButtonGroup from './radio-button-group';
 export * as Table from './table';
+export * as SegmentGroup from './segment-group';
 
 // Simple components
 
@@ -19,7 +20,7 @@ export { Portal } from '@ark-ui/react';
 
 // Layout patterns
 
-export { Box, Stack, VStack, HStack, Container, Flex, Grid } from 'styled-system/jsx';
+export { Divider, Box, Stack, VStack, HStack, Container, Flex, Grid } from 'styled-system/jsx';
 
 // utilities
 

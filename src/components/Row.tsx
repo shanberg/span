@@ -18,16 +18,18 @@ export const Row = React.forwardRef(({ isLogged, str, logRow }: RowProps, ref: R
   const width = useResizedDimensions(elementRef, settings);
   const widthPerChar = width && width / str.length;
 
-  if (!isLogged && widthPerChar && typeof widthPerChar === "number") {
-    logRow({
-      widthPerChar,
-      str,
-      width: width
-    });
-  }
+  React.useLayoutEffect(() => {
+    if (!isLogged && widthPerChar && typeof widthPerChar === "number") {
+      logRow({
+        widthPerChar,
+        str,
+        width: width
+      });
+    }
+  }, [width])
 
   const textEl = (
-    <Text {...settings.fontStyle.props} width="max-content" ref={elementRef}>
+    <Text className="measured-row" width="max-content" ref={elementRef}>
       {str}
     </Text>
   );
