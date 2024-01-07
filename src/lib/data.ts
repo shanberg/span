@@ -1002,5 +1002,5 @@ export const STRINGS = [
 ];
 
 export const TITLE = "Span"
-export const TAGLINE = "Find the right size for your text"
+export const TAGLINE = "Find the best column size by analyzing real content"
 export const HELP = "Add a sample of text strings to see how wide they are. Match styles to your app for better results."
