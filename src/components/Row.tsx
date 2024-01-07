@@ -34,15 +34,11 @@ export const Row = React.forwardRef(({ isLogged, str, logRow }: RowProps, ref: R
     </Text>
   );
 
-  if (settings.performanceMode) {
-    return textEl;
-  } else {
-    return (
-      <Table.Row ref={ref}>
-        <Table.Cell whiteSpace="nowrap">{textEl}</Table.Cell>
-        <Table.Cell textAlign="end">{width && width.toFixed(2)}</Table.Cell>
-        <Table.Cell textAlign="end">{widthPerChar?.toFixed(1)}</Table.Cell>
-      </Table.Row>
-    );
-  }
+  return (
+    <Table.Row ref={ref}>
+      <Table.Cell whiteSpace="nowrap">{textEl}</Table.Cell>
+      <Table.Cell textAlign="end">{width && width.toFixed(2)}</Table.Cell>
+      <Table.Cell textAlign="end">{widthPerChar?.toFixed(1)}</Table.Cell>
+    </Table.Row>
+  );
 });
