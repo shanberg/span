@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { RadioButtonGroup, Tooltip, Divider, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
+import { styled, RadioButtonGroup, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
 import { SettingsProvider } from '~/components/SettingsContext'
 import { EditRowsDialog } from '~/components/EditRowsDialog'
 import { EditStylesDialog } from '~/components/EditStylesDialog'
@@ -11,6 +11,9 @@ import { DataBar } from '~/components/DataBar'
 import { StDevBar } from '~/components/StDevBar'
 import { analyzeRows } from '~/util'
 import { STRINGS } from '~/lib/data'
+import Link from 'next/link'
+
+const StyledLink = styled(Link)
 
 type DisplayMode = "sigma" | "percentile"
 
@@ -33,12 +36,6 @@ export default function Home() {
   });
 
   // Fn to push row data up to state after a row has been rendered
-  // const logRow = React.useCallback(
-  //   (key: string, rowData: Row) => {
-  //     setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
-  //   },
-  //   [strings, settings.styles]
-  // );
   const logRow = (key: string, rowData: Row) => {
     setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
   }
@@ -112,6 +109,48 @@ export default function Home() {
         <VStack
           alignItems="flex-start"
           gap={4}
+          py={4}
+        >
+          <HStack
+            alignSelf="stretch"
+            alignItems="center"
+            gap={4}
+          >
+            <img src="/icon.svg" alt="Icon" width="64" height="64" />
+            <VStack alignItems="flex-start" gap={0}>
+              <Heading fontSize="lg">
+                Find the right width for text
+              </Heading>
+              <Text color="fg.muted" fontSize="xs">
+                Add a sample of text strings to see how wide they are. Match styles to your app for better results.
+              </Text>
+              <Text color="fg.muted" fontSize="xs">by <StyledLink textDecoration="underline" href="https://codeandchrome.com">Code & Chrome</StyledLink></Text>
+            </VStack>
+
+            <Flex
+              gap={2}
+              p={4}
+              flex="0 0 auto"
+              ml="auto"
+              minWidth="8em"
+              alignItems="stretch"
+              flexDirection="row"
+              whiteSpace="nowrap"
+            >
+              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsTextOpen(true)}>
+                Add rows
+              </Button>
+              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsStylesOpen(true)}>
+                Edit styles
+              </Button>
+            </Flex>
+
+          </HStack>
+
+        </VStack>
+        <VStack
+          alignItems="flex-start"
+          gap={4}
           p={4}
           borderRadius="xl"
           overflow="hidden"
@@ -139,47 +178,11 @@ export default function Home() {
             borderRadius: "inherit"
           }}
         >
-          <HStack
-            alignSelf="stretch"
-            alignItems="center"
-            gap={4}
-          >
-            <img src="/icon.svg" alt="Icon" width="64" height="64" />
-            <VStack alignItems="flex-start" gap={0}>
-              <Heading fontSize="lg">
-                Find the right width for text
-              </Heading>
-              <Text color="fg.muted">
-                Add your text → update the styles
-              </Text>
-            </VStack>
-
-            <Flex
-              gap={2}
-              p={4}
-              ml="auto"
-              minWidth="8em"
-              alignItems="stretch"
-              flexDirection="row"
-              whiteSpace="nowrap"
-            >
-              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsTextOpen(true)}>
-                Add rows
-              </Button>
-              <Button flexShrink={0} colorScheme="blue" onClick={() => setIsStylesOpen(true)}>
-                Edit styles
-              </Button>
-            </Flex>
-
-          </HStack>
-
-          <Divider color="bg.subtle" />
 
           <HStack
             justifyContent="flex-start"
             alignSelf="stretch"
             alignItems="flex-start"
-            pr={4}
             pb={2}
           >
             <VStack alignItems="flex-start" gap={4} flex={1}
@@ -268,7 +271,6 @@ export default function Home() {
               )}
             </VStack>
 
-
             <RadioButtonGroup.Root
               variant="outline"
               size="sm"
@@ -276,30 +278,30 @@ export default function Home() {
               defaultValue={displayMode}
             >
               {displayModes.map(({ id, label, help }) => (
-                <Tooltip.Root key={id}>
-                  <Tooltip.Trigger asChild>
-                    <RadioButtonGroup.Item key={id} value={id}
-                      py={1}
-                      px={2}
-                      height="auto"
-                    >
-                      <RadioButtonGroup.ItemControl />
-                      <RadioButtonGroup.ItemText>{label}</RadioButtonGroup.ItemText>
-                    </RadioButtonGroup.Item>
-                  </Tooltip.Trigger>
-                  <Tooltip.Positioner>
-                    <Tooltip.Arrow>
-                      <Tooltip.ArrowTip />
-                    </Tooltip.Arrow>
-                    <Tooltip.Content>{help}</Tooltip.Content>
-                  </Tooltip.Positioner>
-                </Tooltip.Root>
+                <RadioButtonGroup.Item key={id} value={id}
+                  py={1}
+                  px={2}
+                  height="auto"
+                >
+                  {/* <Tooltip.Root key={id}> */}
+                  {/* <Tooltip.Trigger> */}
+                  <RadioButtonGroup.ItemControl />
+                  <RadioButtonGroup.ItemText>{label}</RadioButtonGroup.ItemText>
+                  {/* </Tooltip.Trigger> */}
+                  {/* <Tooltip.Positioner> */}
+                  {/* <Tooltip.Arrow> */}
+                  {/* <Tooltip.ArrowTip /> */}
+                  {/* </Tooltip.Arrow> */}
+                  {/* <Tooltip.Content>{help}</Tooltip.Content> */}
+                  {/* </Tooltip.Positioner> */}
+                  {/* </Tooltip.Root> */}
+                </RadioButtonGroup.Item>
               ))}
             </RadioButtonGroup.Root>
 
-
           </HStack>
         </VStack>
+
         <Table.Root>
           <Table.Head>
             <Table.Row>
