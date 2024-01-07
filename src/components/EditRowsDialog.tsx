@@ -10,10 +10,13 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
   const initialValue = strings?.join("\n") || "";
   const [newValue, setNewValue] = React.useState<string>(initialValue);
 
-  const splitNewValue: string[] = newValue.split("\n").map((s) => s.trim());
+  const splitNewValue: string[] = React.useMemo(
+    () => newValue.split("\n").map((s) => s.trim()).filter((s) => s.length > 0)
+    , [newValue]);
 
   return (
     <Dialog.Root
+      closeOnInteractOutside={false}
       open={isOpen}
       onOpenChange={(details) => {
         if (details.open === false) {
@@ -24,10 +27,10 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content alignItems="stretch">
+          <Dialog.Content alignItems="stretch" minWidth="40rem">
             <VStack p={4} alignItems="stretch" gap={0}>
-              <Dialog.Title>Add text</Dialog.Title>
-              <Dialog.Description>Add text separated by new line</Dialog.Description>
+              <Dialog.Title>Add rows</Dialog.Title>
+              <Dialog.Description>Add rows text separated by new lines.</Dialog.Description>
             </VStack>
 
             <Box px={4} lineHeight="0">
@@ -38,6 +41,9 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
                 p={2}
                 px={3}
                 border="none"
+                autoCorrect="off"
+                spellCheck="false"
+                autoComplete="off"
                 borderRadius="md"
                 defaultValue={newValue}
                 height="40em"
@@ -46,8 +52,15 @@ export const EditRowsDialog = ({ isOpen, onClose, strings, onUpdateRows }: {
             </Box>
 
             <HStack p={4} gap={4} justifyContent="flex-end">
-              <Text flex={1} fontSize="sm" color="fg.muted">{splitNewValue.length} lines</Text>
-              <Button as={Dialog.CloseTrigger}>Cancel</Button>
+              <VStack alignItems="stretch" gap={0} mr="auto">
+                <Text flex={1} fontSize="sm" color="fg.muted">{splitNewValue.length} lines</Text>
+                {splitNewValue.length > 1000 && (
+                  <Text fontSize="sm" color="fg.default">Analysis may take a moment</Text>
+                )}
+              </VStack>
+              <Dialog.CloseTrigger asChild>
+                <Button variant="outline">Cancel</Button>
+              </Dialog.CloseTrigger>
               <Button
                 onClick={() => {
                   onUpdateRows(splitNewValue);

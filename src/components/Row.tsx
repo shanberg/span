@@ -19,11 +19,11 @@ export const Row = React.forwardRef(({ isLogged, str, logRow }: RowProps, ref: R
   const widthPerChar = width && width / str.length;
 
   React.useLayoutEffect(() => {
-    if (!isLogged && widthPerChar && typeof widthPerChar === "number") {
+    if (!isLogged && widthPerChar) {
       logRow({
         widthPerChar,
         str,
-        width: width
+        width
       });
     }
   }, [width])

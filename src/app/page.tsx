@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { RadioButtonGroup, Divider, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
+import { RadioButtonGroup, Tooltip, Divider, Text, Table, VStack, Button, HStack, Heading, Flex } from '~/components/ui'
 import { SettingsProvider } from '~/components/SettingsContext'
 import { EditRowsDialog } from '~/components/EditRowsDialog'
 import { EditStylesDialog } from '~/components/EditStylesDialog'
@@ -10,14 +10,13 @@ import { Row } from '~/components/Row'
 import { DataBar } from '~/components/DataBar'
 import { StDevBar } from '~/components/StDevBar'
 import { analyzeRows } from '~/util'
-import { fontStyles } from '~/lib/styles'
 import { STRINGS } from '~/lib/data'
 
 type DisplayMode = "sigma" | "percentile"
 
 const displayModes = [
-  { id: "sigma", label: "Standard deviation" },
-  { id: "percentile", label: "Percentile" }
+  { id: "sigma", label: "Standard deviation", help: "Standard deviation indicates trends, and can help to anticipate wider content based on a limited sample." },
+  { id: "percentile", label: "Percentile", help: "Percentile shows how wide a space should be to fit a given portion of the rows. 95% means 95% of all the rows will fit in a space this size." }
 ]
 
 export default function Home() {
@@ -26,7 +25,7 @@ export default function Home() {
   const [displayMode, setDisplayMode] = React.useState<DisplayMode>("percentile");
   const [isTextOpen, setIsTextOpen] = React.useState(false)
   const [isStylesOpen, setIsStylesOpen] = React.useState(false)
-  const [prevAnalysis, setPrevAnalysis] = React.useState<analysis | undefined>(null)
+  const prevAnalysis = React.useRef<Analysis | undefined>(undefined)
 
   const [settings, setSettings] = React.useState<Settings>({
     performanceMode: false,
@@ -34,12 +33,15 @@ export default function Home() {
   });
 
   // Fn to push row data up to state after a row has been rendered
-  const logRow = React.useCallback(
-    (key: string, rowData: Row) => {
-      setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
-    },
-    [strings, settings.styles]
-  );
+  // const logRow = React.useCallback(
+  //   (key: string, rowData: Row) => {
+  //     setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
+  //   },
+  //   [strings, settings.styles]
+  // );
+  const logRow = (key: string, rowData: Row) => {
+    setRowData((prev: Row) => ({ ...prev, [key]: rowData }));
+  }
 
   // When the rows have been edited
   const handleUpdateRows = React.useCallback((newStringArr: string[]) => {
@@ -64,12 +66,20 @@ export default function Home() {
     id: rowKey,
     ...rowData[rowKey]
   })), [rowData, settings.styles]);
+
   const cssString = `.measured-row {${settings.styles}}`
-  const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr])
+
+  const analysis = React.useMemo(() => analyzeRows(resultsArr), [resultsArr, rowData, settings.styles])
+
   const isAnalysisPending = !analysis?.averageStrLength || isNaN(analysis?.averageStrLength)
-  const cOPA = prevAnalysis
+
+  if (!isAnalysisPending) {
+    prevAnalysis.current = analysis
+  }
+
+  const cOPA = prevAnalysis.current
     ? isAnalysisPending
-      ? prevAnalysis
+      ? prevAnalysis.current
       : analysis
     : analysis
 
@@ -113,7 +123,7 @@ export default function Home() {
             position: "absolute",
             zIndex: -2,
             inset: 0,
-            boxShadow: "inset 0 0 32px var(--colors-bg-subtle)",
+            boxShadow: "inset 0 0 40px 18px var(--colors-bg-subtle)",
             backdropFilter: "blur(12px)",
             pointerEvents: "none",
             borderRadius: "inherit"
@@ -154,7 +164,7 @@ export default function Home() {
               whiteSpace="nowrap"
             >
               <Button flexShrink={0} colorScheme="blue" onClick={() => setIsTextOpen(true)}>
-                Add text
+                Add rows
               </Button>
               <Button flexShrink={0} colorScheme="blue" onClick={() => setIsStylesOpen(true)}>
                 Edit styles
@@ -265,15 +275,25 @@ export default function Home() {
               onValueChange={(value) => setDisplayMode(value.value as DisplayMode)}
               defaultValue={displayMode}
             >
-              {displayModes.map((option) => (
-                <RadioButtonGroup.Item key={option.id} value={option.id}
-                  py={1}
-                  px={2}
-                  height="auto"
-                >
-                  <RadioButtonGroup.ItemControl />
-                  <RadioButtonGroup.ItemText>{option.label}</RadioButtonGroup.ItemText>
-                </RadioButtonGroup.Item>
+              {displayModes.map(({ id, label, help }) => (
+                <Tooltip.Root key={id}>
+                  <Tooltip.Trigger asChild>
+                    <RadioButtonGroup.Item key={id} value={id}
+                      py={1}
+                      px={2}
+                      height="auto"
+                    >
+                      <RadioButtonGroup.ItemControl />
+                      <RadioButtonGroup.ItemText>{label}</RadioButtonGroup.ItemText>
+                    </RadioButtonGroup.Item>
+                  </Tooltip.Trigger>
+                  <Tooltip.Positioner>
+                    <Tooltip.Arrow>
+                      <Tooltip.ArrowTip />
+                    </Tooltip.Arrow>
+                    <Tooltip.Content>{help}</Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Tooltip.Root>
               ))}
             </RadioButtonGroup.Root>
 

@@ -6,6 +6,7 @@ export * as Tabs from './tabs';
 export * as RadioButtonGroup from './radio-button-group';
 export * as Table from './table';
 export * as SegmentGroup from './segment-group';
+export * as Tooltip from './tooltip';
 
 // Simple components
 

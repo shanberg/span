@@ -2,11 +2,18 @@ import React from "react";
 import CodeMirror from '@uiw/react-codemirror';
 import { Dialog, Portal, HStack, VStack, Text, Box, Button } from "./ui";
 
+const lightweightSanitize = (styles: string) => {
+  if (!styles) return "";
+  if (!styles.length) return "";
+  if (!styles.includes("}")) return styles.trim();
+  return styles?.split("}")[0].trim() || "";
+}
+
 export const EditStylesDialog = ({ isOpen, onClose, styles, onUpdateStyles }: {
   isOpen: boolean,
   onClose: () => void;
   styles: any,
-  onUpdateStyles: (styles) => void
+  onUpdateStyles: (styles: string) => void
 }) => {
   const initialValue = styles;
   const [newStyles, setNewStyles] = React.useState<string>(initialValue);
@@ -30,7 +37,7 @@ export const EditStylesDialog = ({ isOpen, onClose, styles, onUpdateStyles }: {
           <Dialog.Content alignItems="stretch" minWidth="40rem">
             <VStack p={4} alignItems="stretch" gap={0}>
               <Dialog.Title>Edit CSS</Dialog.Title>
-              <Dialog.Description maxWidth="44em">Add styles to match your application.<br />Styles are applied before measuring the text, to get accurate widths.</Dialog.Description>
+              <Dialog.Description maxWidth="44em">Add styles to match your application</Dialog.Description>
             </VStack>
 
             <VStack gap={2} px={4} alignItems="stretch">
@@ -40,7 +47,11 @@ export const EditStylesDialog = ({ isOpen, onClose, styles, onUpdateStyles }: {
                   theme="dark"
                   value={"/* Add your CSS here */\n"}
                   minHeight="20em"
-                  onChange={setNewStyles}
+                  onChange={(updated) => {
+                    if (updated) {
+                      setNewStyles(lightweightSanitize(updated))
+                    }
+                  }}
                 />
               </Box>
 
@@ -58,7 +69,7 @@ export const EditStylesDialog = ({ isOpen, onClose, styles, onUpdateStyles }: {
               </Dialog.CloseTrigger>
               <Button
                 onClick={() => {
-                  onUpdateStyles(newStyles);
+                  onUpdateStyles(lightweightSanitize(newStyles));
                 }}
               >
                 Update styles
