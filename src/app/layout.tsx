@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PropsWithChildren } from 'react'
+import { Analytics } from '@vercel/analytics/react';
 import './global.css'
 import { TITLE, TAGLINE } from '~/lib/data'
 
@@ -18,6 +19,7 @@ const RootLayout = (props: PropsWithChildren) => {
   return (
     <html lang="en" data-color-mode="dark">
       <body>{children}</body>
+      <Analytics />
     </html>
   )
 }
