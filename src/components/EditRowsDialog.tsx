@@ -51,7 +51,7 @@ export const EditRowsDialog = ({
             minWidth="40rem"
             height="40rem"
             maxHeight="calc(100vh - 2rem)"
-            display="flex"
+            display={isOpen ? "flex" : undefined}
             flexDirection="column"
             overflow="hidden"
           >
